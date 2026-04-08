@@ -1,0 +1,799 @@
+[
+  {
+    "Task Name": "Resolve 'at random' vs 'skill-based' contradiction in Rules/Terms",
+    "Category": "Legal & Compliance",
+    "Description": "The current Terms and Rules contain conflicting language — some sections describe the prize draw as 'at random' while others imply skill-based elimination determines eligibility. This must be resolved to comply with NZ gambling and promotional competition law.",
+    "Owner": "Legal/Shelley",
+    "Priority": "Critical",
+    "Status": "Not Started",
+    "Due Date": "2026-06-30",
+    "Dependencies": [],
+    "Notes": "DIA distinguishes between 'games of chance' (regulated) and 'games of skill' (unregulated). The current hybrid wording creates legal exposure. Recommend landing on: skill-based survival gate + random draw among eligible survivors. Shelley to confirm this framing is defensible."
+  },
+  {
+    "Task Name": "Get DIA informal guidance on prize draw structure",
+    "Category": "Legal & Compliance",
+    "Description": "Seek informal guidance from the Department of Internal Affairs on whether REAP's prize draw structure (survival gate + random draw among survivors) requires a gambling licence or qualifies as an exempt promotional competition.",
+    "Owner": "Legal/Shelley",
+    "Priority": "Critical",
+    "Status": "Not Started",
+    "Due Date": "2026-07-15",
+    "Dependencies": ["Resolve 'at random' vs 'skill-based' contradiction in Rules/Terms"],
+    "Notes": "DIA informal guidance is not binding but provides a defensible paper trail. If DIA signals concern, the prize structure may need to be restructured (e.g., moved to a Section 4(1)(d) exempt format). Allow 4-6 weeks for DIA response."
+  },
+  {
+    "Task Name": "Add prize funding separation disclosure to Terms",
+    "Category": "Legal & Compliance",
+    "Description": "The Terms must clearly disclose how prize funds are held, managed, and separated from operating revenue, including whether Sport Waikato as a charitable trust has restrictions on how prize disbursements are treated.",
+    "Owner": "Legal/Shelley",
+    "Priority": "Critical",
+    "Status": "Not Started",
+    "Due Date": "2026-07-31",
+    "Dependencies": ["Resolve 'at random' vs 'skill-based' contradiction in Rules/Terms", "Get DIA informal guidance on prize draw structure"],
+    "Notes": "Charitable trust status may require prize funding to be quarantined in a separate account. Check with Sport Waikato finance team and auditors. This disclosure must appear in both Terms and Rules."
+  },
+  {
+    "Task Name": "Rotate compromised credentials (admin passwords in public repo)",
+    "Category": "Legal & Compliance",
+    "Description": "Admin passwords and/or API keys have been identified in the public GitHub repository. All compromised credentials must be rotated immediately across Supabase, Stripe, and any third-party service.",
+    "Owner": "Ashleigh (Dev)",
+    "Priority": "Critical",
+    "Status": "Not Started",
+    "Due Date": "2026-04-17",
+    "Dependencies": [],
+    "Notes": "IMMEDIATE ACTION REQUIRED. Treat as a security incident. Rotate: Supabase service role key, Stripe secret key, any admin account passwords. Audit git history for other secrets. Add .env to .gitignore and use GitHub secret scanning. Document incident for governance record."
+  },
+  {
+    "Task Name": "Fix Stripe recurring vs one-time billing configuration",
+    "Category": "Legal & Compliance",
+    "Description": "The current Stripe integration may be configured as a one-time payment rather than a recurring monthly subscription, or the subscription product/price object is misconfigured. This must be corrected to accurately represent what participants are signing up for.",
+    "Owner": "Ashleigh (Dev)",
+    "Priority": "Critical",
+    "Status": "Not Started",
+    "Due Date": "2026-06-30",
+    "Dependencies": ["Build Stripe webhook handler (set paid_at, confirm season entry)"],
+    "Notes": "Charging participants incorrectly (one-time vs recurring) is a consumer law issue under the Fair Trading Act 1986. Also check that the subscription description shown at checkout matches the Terms. Coordinate with Leanne on exact billing model: monthly recurring until cancelled, or per-season fixed term."
+  },
+  {
+    "Task Name": "Add server-side age verification",
+    "Category": "Legal & Compliance",
+    "Description": "Age verification (18+) must be enforced server-side in the create-checkout Supabase function, not just on the client, to prevent bypass and ensure compliance with terms of service and potential gambling-adjacent regulation.",
+    "Owner": "Ashleigh (Dev)",
+    "Priority": "Critical",
+    "Status": "Not Started",
+    "Due Date": "2026-07-31",
+    "Dependencies": ["Build Stripe webhook handler (set paid_at, confirm season entry)"],
+    "Notes": "Client-side age gates are trivially bypassed. The Supabase create-checkout edge function must validate DOB against the user's profile before creating a Stripe session. Consider also requiring DOB at signup and storing it. Confirm minimum age with Shelley — may need to be 16+ to align with Sport Waikato's broader programmes."
+  },
+  {
+    "Task Name": "Have Shelley review final Terms and Rules before launch",
+    "Category": "Legal & Compliance",
+    "Description": "The final Terms of Service, Competition Rules, and Privacy Policy must be reviewed and signed off by Sport Waikato's legal counsel (Shelley) before the public launch on November 1, 2026.",
+    "Owner": "Legal/Shelley",
+    "Priority": "Critical",
+    "Status": "Not Started",
+    "Due Date": "2026-09-30",
+    "Dependencies": [
+      "Resolve 'at random' vs 'skill-based' contradiction in Rules/Terms",
+      "Add prize funding separation disclosure to Terms",
+      "Get DIA informal guidance on prize draw structure",
+      "Privacy Act 2020 compliance review for sponsor data sharing",
+      "Prepare data processing agreement template for sponsors"
+    ],
+    "Notes": "Allow at least 2 weeks for Shelley's review and any resulting amendments. Do not launch without written sign-off. Store signed approval document in governance records."
+  },
+  {
+    "Task Name": "Privacy Act 2020 compliance review for sponsor data sharing",
+    "Category": "Legal & Compliance",
+    "Description": "Review all data flows involving participant data and sponsors to ensure compliance with the Privacy Act 2020, including whether participant opt-in consent is sufficient and whether Sport Waikato is acting as a data controller or processor.",
+    "Owner": "Legal/Shelley",
+    "Priority": "High",
+    "Status": "Not Started",
+    "Due Date": "2026-08-31",
+    "Dependencies": ["Sponsor opt-in consent checkbox for group join"],
+    "Notes": "Key question: when a sponsor creates a group league, what participant data do they see? Group membership, activity data, elimination status? Each data type requires a clear legal basis. Sponsors must sign a data processing agreement. Participants must consent specifically to sponsor data sharing — general Terms consent is insufficient."
+  },
+  {
+    "Task Name": "Prepare data processing agreement template for sponsors",
+    "Category": "Legal & Compliance",
+    "Description": "Draft a standard data processing agreement (DPA) that sponsors must sign before accessing any participant data, covering data minimisation, retention limits, and prohibited uses.",
+    "Owner": "Legal/Shelley",
+    "Priority": "High",
+    "Status": "Not Started",
+    "Due Date": "2026-08-31",
+    "Dependencies": ["Privacy Act 2020 compliance review for sponsor data sharing"],
+    "Notes": "Template should be reusable across all sponsor relationships. Include: what data sponsor can access, for what purpose, for how long, and what happens to it after the season. Sport Waikato retains the right to audit compliance."
+  },
+  {
+    "Task Name": "Build midnight elimination cron job (pg_cron at 23:59 NZST)",
+    "Category": "Product Build",
+    "Description": "Build and deploy the automated daily elimination job that runs at 23:59 NZST, checks each active participant's activity log for the day, and eliminates any participant who has not recorded 21 minutes of Zone 2 movement.",
+    "Owner": "Ashleigh (Dev)",
+    "Priority": "Critical",
+    "Status": "Not Started",
+    "Due Date": "2026-08-01",
+    "Dependencies": [],
+    "Notes": "Use pg_cron within Supabase. Must handle NZST/NZDT timezone correctly (UTC+12/UTC+13 — NZ observes daylight saving). Elimination must be atomic and logged. Consider a 'grace window' policy if activity sync fails (e.g., Garmin delay). Requires thorough testing in staging before production."
+  },
+  {
+    "Task Name": "Build Stripe webhook handler (set paid_at, confirm season entry)",
+    "Category": "Product Build",
+    "Description": "Build the Stripe webhook endpoint that listens for payment confirmation events, sets the paid_at timestamp on the participant record, and confirms their season entry — ensuring no participant can compete without a confirmed payment.",
+    "Owner": "Ashleigh (Dev)",
+    "Priority": "Critical",
+    "Status": "Not Started",
+    "Due Date": "2026-07-31",
+    "Dependencies": ["Fix Stripe recurring vs one-time billing configuration"],
+    "Notes": "Handle: checkout.session.completed, invoice.payment_succeeded, invoice.payment_failed, customer.subscription.deleted. On payment failure, participant should be suspended (not immediately eliminated) with a grace period. On cancellation, determine whether mid-season cancellations are permitted and what happens to their season entry."
+  },
+  {
+    "Task Name": "Build prize draw backend (prize_awards table, 7-day lock, eligibility gate)",
+    "Category": "Product Build",
+    "Description": "Build the backend system for the spot prize draw, including the prize_awards table, eligibility gate (survivors only, paid_at confirmed), 7-day prize lock to prevent double-claiming, and winner selection logic.",
+    "Owner": "Ashleigh (Dev)",
+    "Priority": "Critical",
+    "Status": "Not Started",
+    "Due Date": "2026-08-31",
+    "Dependencies": [
+      "Build midnight elimination cron job (pg_cron at 23:59 NZST)",
+      "Build Stripe webhook handler (set paid_at, confirm season entry)",
+      "Resolve 'at random' vs 'skill-based' contradiction in Rules/Terms",
+      "Get DIA informal guidance on prize draw structure"
+    ],
+    "Notes": "Prize draw must be auditable. Store draw timestamp, random seed (or method), eligible pool size, and selected winner. 7-day lock prevents the same participant winning again within 7 days. Admin UI should allow manual override (for governance). All draws must be logged for DIA compliance."
+  },
+  {
+    "Task Name": "Connect Redemption Day to elimination logic",
+    "Category": "Product Build",
+    "Description": "Build the Redemption Day mechanic — a structured opportunity for eliminated participants to re-enter the season — and connect it to the elimination logic so that redemption correctly restores active status and is logged.",
+    "Owner": "Ashleigh (Dev)",
+    "Priority": "High",
+    "Status": "Not Started",
+    "Due Date": "2026-08-31",
+    "Dependencies": ["Build midnight elimination cron job (pg_cron at 23:59 NZST)"],
+    "Notes": "Define Redemption Day rules: when it occurs (e.g., Day 7 and Day 14), what participants must do to redeem, and whether it costs an additional fee. Ensure redemption is reflected correctly in survival boards, leaderboards, and group standings. Confirm with Leanne on game design before building."
+  },
+  {
+    "Task Name": "Server-side age gate in create-checkout function",
+    "Category": "Product Build",
+    "Description": "Implement age verification in the Supabase create-checkout edge function to reject checkout session creation for users below the minimum age, preventing client-side bypass.",
+    "Owner": "Ashleigh (Dev)",
+    "Priority": "Critical",
+    "Status": "Not Started",
+    "Due Date": "2026-07-31",
+    "Dependencies": ["Add server-side age verification"],
+    "Notes": "Must return a clear error message to the frontend when age gate fails. Do not expose the reason for failure in a way that helps bad actors (e.g., 'You must be 18 or over to participate'). Log failed attempts for audit purposes."
+  },
+  {
+    "Task Name": "Replace hardcoded stats with live DB queries",
+    "Category": "Product Build",
+    "Description": "Replace all hardcoded statistics on the landing page and dashboard (e.g., participant count, survivor count, days remaining) with live database queries so the product reflects real-time data.",
+    "Owner": "Ashleigh (Dev)",
+    "Priority": "High",
+    "Status": "Not Started",
+    "Due Date": "2026-09-01",
+    "Dependencies": ["Build midnight elimination cron job (pg_cron at 23:59 NZST)"],
+    "Notes": "Hardcoded stats create credibility risk — if a journalist or potential participant inspects the page and numbers don't match reality, it undermines trust. Use Supabase real-time subscriptions or edge functions for stats that need to be current. Consider caching for performance."
+  },
+  {
+    "Task Name": "Build group/league feature (create group, invite link, private leaderboard)",
+    "Category": "Product Build",
+    "Description": "Build the group and league system allowing organisations, sponsors, or friend groups to create a private REAP group with a unique invite link and a private leaderboard showing only group members' survival status.",
+    "Owner": "Ashleigh (Dev)",
+    "Priority": "High",
+    "Status": "Not Started",
+    "Due Date": "2026-09-15",
+    "Dependencies": [
+      "Build midnight elimination cron job (pg_cron at 23:59 NZST)",
+      "Multi-group membership (user in multiple groups)",
+      "Sponsor opt-in consent checkbox for group join"
+    ],
+    "Notes": "Core viral loop mechanic. Group admin can be an organisation (sponsor) or an individual. Invite links should be unique, trackable, and optionally expiring. Private leaderboard should show: name (or pseudonym), days survived, eliminated/active status. Do not expose individual activity minutes by default."
+  },
+  {
+    "Task Name": "Multi-group membership (user in multiple groups)",
+    "Category": "Product Build",
+    "Description": "Ensure the data model and UI support a single user being a member of multiple groups simultaneously (e.g., a corporate group and a friend group), with their survival status synced across all groups.",
+    "Owner": "Ashleigh (Dev)",
+    "Priority": "High",
+    "Status": "Not Started",
+    "Due Date": "2026-09-15",
+    "Dependencies": [],
+    "Notes": "Schema should use a join table (user_groups) rather than a foreign key on the user record. Elimination in one group context does not mean elimination from another — survival status is global. UI should show all groups the user belongs to on their dashboard."
+  },
+  {
+    "Task Name": "Build shareable daily survival card (WhatsApp-native image)",
+    "Category": "Product Build",
+    "Description": "Build a dynamically generated shareable image card that participants can share daily to show their survival status — optimised for WhatsApp sharing (square or vertical format, high contrast, large text).",
+    "Owner": "Ashleigh (Dev)",
+    "Priority": "High",
+    "Status": "Not Started",
+    "Due Date": "2026-09-15",
+    "Dependencies": ["Build midnight elimination cron job (pg_cron at 23:59 NZST)"],
+    "Notes": "Consider using Satori or a Supabase edge function with canvas/sharp to generate OG images server-side. Card should show: participant name/alias, days survived, current season, REAP branding. Include a referral/invite link embedded in the image metadata. WhatsApp previews work best with 1200x630px images."
+  },
+  {
+    "Task Name": "Build shareable elimination card",
+    "Category": "Product Build",
+    "Description": "Build a shareable image card for eliminated participants that frames their elimination positively — celebrating how many days they survived and inviting friends to join the next season.",
+    "Owner": "Ashleigh (Dev)",
+    "Priority": "Medium",
+    "Status": "Not Started",
+    "Due Date": "2026-09-30",
+    "Dependencies": ["Build shareable daily survival card (WhatsApp-native image)"],
+    "Notes": "Tone is important: elimination card should feel like a badge of honour ('I survived 17 days of REAP') not a failure. Include CTA: 'Join Season 2' or 'Challenge a friend'. This is a key viral acquisition mechanic — eliminated participants sharing their card is free advertising."
+  },
+  {
+    "Task Name": "Build admin revenue dashboard",
+    "Category": "Product Build",
+    "Description": "Build an internal admin dashboard showing real-time revenue metrics: total subscribers, MRR, churn rate, elimination rate, prize draw history, and RST commission amounts owed.",
+    "Owner": "Ashleigh (Dev)",
+    "Priority": "High",
+    "Status": "Not Started",
+    "Due Date": "2026-09-15",
+    "Dependencies": [
+      "Build Stripe webhook handler (set paid_at, confirm season entry)",
+      "Build RST referral tracking (unique invite links with attribution)"
+    ],
+    "Notes": "Admin dashboard should be accessible only to Sport Waikato staff (role-based access). Leanne will use this for board reporting. Key metrics: subscribers by source (direct, RST partner, corporate), daily active vs eliminated, revenue by season. Export to CSV for reporting."
+  },
+  {
+    "Task Name": "Build RST referral tracking (unique invite links with attribution)",
+    "Category": "Product Build",
+    "Description": "Build a referral tracking system that generates unique invite links for each RST partner, tracks sign-ups and paid conversions attributed to each link, and feeds commission calculation.",
+    "Owner": "Ashleigh (Dev)",
+    "Priority": "High",
+    "Status": "Not Started",
+    "Due Date": "2026-09-15",
+    "Dependencies": ["Build Stripe webhook handler (set paid_at, confirm season entry)"],
+    "Notes": "Store UTM parameters or a custom ref code on signup. Attribution should survive the Stripe checkout redirect. Commission should be calculated per confirmed paid sign-up (not just clicks). RST partners should ideally have a simple dashboard or receive a monthly report."
+  },
+  {
+    "Task Name": "Sponsor opt-in consent checkbox for group join",
+    "Category": "Product Build",
+    "Description": "Add a clear, explicit opt-in consent checkbox when a participant joins a sponsor-created group, informing them what data the sponsor will see and obtaining consent for that data sharing.",
+    "Owner": "Ashleigh (Dev)",
+    "Priority": "High",
+    "Status": "Not Started",
+    "Due Date": "2026-08-31",
+    "Dependencies": ["Privacy Act 2020 compliance review for sponsor data sharing"],
+    "Notes": "Consent must be granular and cannot be pre-ticked. Store consent timestamp and version of the consent text shown. If a user withdraws consent, they should be able to leave the group. Sponsor should not receive data for users who have not consented."
+  },
+  {
+    "Task Name": "Rename/remove WON leaderboard column",
+    "Category": "Product Build",
+    "Description": "Remove or rename the 'WON' column from the leaderboard UI, which may create confusion or legal issues by implying a prize has been won when it has not yet been awarded.",
+    "Owner": "Ashleigh (Dev)",
+    "Priority": "Medium",
+    "Status": "Not Started",
+    "Due Date": "2026-07-31",
+    "Dependencies": [],
+    "Notes": "Confirm with Leanne what this column is intended to show. If it tracks spot prizes awarded, rename to 'Prizes Awarded' or similar. If it is a placeholder, remove it. Misleading UI around prize winning could be a Fair Trading Act issue."
+  },
+  {
+    "Task Name": "Fix Webinar.tsx 'Survive the month to win' copy",
+    "Category": "Product Build",
+    "Description": "Update the copy in Webinar.tsx that reads 'Survive the month to win' — this framing implies a guaranteed prize for surviving, which is legally and factually incorrect given the spot prize draw structure.",
+    "Owner": "Ashleigh (Dev)",
+    "Priority": "Medium",
+    "Status": "Not Started",
+    "Due Date": "2026-07-31",
+    "Dependencies": ["Resolve 'at random' vs 'skill-based' contradiction in Rules/Terms"],
+    "Notes": "Replace with accurate copy, e.g., 'Survive the month to enter the prize draw' or 'Stay alive. Stay in the draw.' Coordinate with Martin for brand-consistent copy. All copy changes touching legal/prize language should be reviewed by Shelley."
+  },
+  {
+    "Task Name": "Add Sport Waikato Living Lab attribution to landing page header/footer",
+    "Category": "Product Build",
+    "Description": "Add clear attribution to Sport Waikato and the Living Lab initiative in the landing page header or footer, establishing organisational credibility and satisfying any grant or funder attribution requirements.",
+    "Owner": "Ashleigh (Dev)",
+    "Priority": "Medium",
+    "Status": "Not Started",
+    "Due Date": "2026-08-31",
+    "Dependencies": [],
+    "Notes": "Check funder grant terms for specific attribution wording requirements. May need to include Sport Waikato logo and/or Living Lab logo. Coordinate with Leanne on approved branding assets."
+  },
+  {
+    "Task Name": "Build subscription cancellation flow",
+    "Category": "Product Build",
+    "Description": "Build a self-service subscription cancellation flow within the participant dashboard, allowing users to cancel their recurring subscription at any time and handling the downstream effects on their season entry.",
+    "Owner": "Ashleigh (Dev)",
+    "Priority": "High",
+    "Status": "Not Started",
+    "Due Date": "2026-09-15",
+    "Dependencies": ["Build Stripe webhook handler (set paid_at, confirm season entry)"],
+    "Notes": "Consumer law requires that subscribers can cancel easily — hiding the cancel button or requiring a phone call is a Fair Trading Act risk. Cancellation should trigger: end of billing period confirmed, clear message about what happens to their season entry (do they get to finish the season?). Coordinate with Leanne on cancellation policy."
+  },
+  {
+    "Task Name": "Device integrations (Apple Health, Garmin, Strava, Google Fit, Fitbit) - verify working",
+    "Category": "Product Build",
+    "Description": "Verify that all device and platform integrations (Apple Health, Garmin Connect, Strava, Google Fit, Fitbit) are functioning correctly end-to-end, from data sync through to Zone 2 minute calculation and elimination logic.",
+    "Owner": "Ashleigh (Dev)",
+    "Priority": "High",
+    "Status": "Not Started",
+    "Due Date": "2026-09-01",
+    "Dependencies": ["Build midnight elimination cron job (pg_cron at 23:59 NZST)"],
+    "Notes": "Each integration has different data latency — Garmin can have 2-4 hour sync delays. Define policy for sync delays at 23:59 cutoff. Consider a 15-minute grace window after midnight for late-syncing devices. Test with real devices across all platforms before soft launch."
+  },
+  {
+    "Task Name": "Add onboarding baseline activity survey question",
+    "Category": "Product Build",
+    "Description": "Add a baseline activity survey question during onboarding that asks how many days per week the participant was active before joining REAP, enabling before/after impact measurement for Sport Waikato's research outcomes.",
+    "Owner": "Ashleigh (Dev)",
+    "Priority": "Medium",
+    "Status": "Not Started",
+    "Due Date": "2026-09-15",
+    "Dependencies": [],
+    "Notes": "This is a Living Lab / Sport NZ outcome measurement requirement. Question: 'Before joining REAP, how many days per week were you physically active for 21+ minutes?' Store response in participant profile. Also consider: age, gender, region for demographic analysis. Keep survey to 3-5 questions maximum to avoid drop-off."
+  },
+  {
+    "Task Name": "Season-close participant data export for Sport Waikato reporting",
+    "Category": "Product Build",
+    "Description": "Build an admin function to export anonymised participant data at season close for Sport Waikato's internal reporting, funder reporting, and Living Lab research — including activity compliance rates, demographic data (where collected), and elimination patterns.",
+    "Owner": "Ashleigh (Dev)",
+    "Priority": "Medium",
+    "Status": "Not Started",
+    "Due Date": "2026-09-30",
+    "Dependencies": [
+      "Add onboarding baseline activity survey question",
+      "Privacy Act 2020 compliance review for sponsor data sharing"
+    ],
+    "Notes": "Export must be anonymised or pseudonymised — no individually identifiable data in research reports unless participant has separately consented to research participation. Coordinate with Leanne on what funders require. CSV export from admin dashboard is sufficient for Season 1."
+  },
+  {
+    "Task Name": "Finalise brand positioning ('killer movement app' / 'Move Daily. Stay Alive.')",
+    "Category": "Marketing",
+    "Description": "Lock in the core brand positioning, tagline, and tone-of-voice guidelines for REAP, including the 'playfully dark, not gory' creative direction and the primary tagline for all marketing materials.",
+    "Owner": "Martin (Marketing)",
+    "Priority": "Critical",
+    "Status": "Not Started",
+    "Due Date": "2026-05-31",
+    "Dependencies": ["Decision on name: keep REAP or rename (CULL / FALLEN / other)"],
+    "Notes": "Tagline options on the table: 'Move Daily. Stay Alive.' / 'Move or get cut.' / 'The survival game for people who want to live longer.' Brand must work for: corporate sponsors (professional enough), fitness influencers (cool/viral), mainstream NZ media (explainable in 10 seconds). Avoid anything that reads as genuinely violent or morbid."
+  },
+  {
+    "Task Name": "Decision on name: keep REAP or rename (CULL / FALLEN / other)",
+    "Category": "Marketing",
+    "Description": "Make a final decision on whether to keep the name REAP (risking RAPE misread) or rename to an alternative such as CULL, FALLEN, or another option — and document the rationale for board and brand records.",
+    "Owner": "Leanne (CEO)",
+    "Priority": "Critical",
+    "Status": "Not Started",
+    "Due Date": "2026-05-15",
+    "Dependencies": [],
+    "Notes": "The REAP/RAPE misread risk is real in certain fonts, at small sizes, and in all-caps contexts. Test the wordmark at 12px, on mobile, and in WhatsApp previews. If keeping REAP: ensure logo design clearly differentiates. If renaming: CULL has similar misread risk (CUNT). FALLEN is cleaner but loses the verb energy. Consider focus group testing with 5-10 people before committing."
+  },
+  {
+    "Task Name": "Develop brand rationale document (playfully dark, not gory)",
+    "Category": "Marketing",
+    "Description": "Write a concise brand rationale document explaining the creative direction — playfully dark, survival-themed, not gory — for use as a back-pocket document with media, partners, and stakeholders who question the tone.",
+    "Owner": "Martin (Marketing)",
+    "Priority": "High",
+    "Status": "Not Started",
+    "Due Date": "2026-06-30",
+    "Dependencies": [
+      "Decision on name: keep REAP or rename (CULL / FALLEN / other)",
+      "Finalise brand positioning ('killer movement app' / 'Move Daily. Stay Alive.')"
+    ],
+    "Notes": "Document should be 1-2 pages. Cover: why survival framing works behaviourally (loss aversion, commitment devices), precedents (Zombies Run, Duolingo streak), and how REAP differs from harmful gamification. This document will be used to brief media, board members, and sponsors who are nervous about the tone."
+  },
+  {
+    "Task Name": "Build October pre-launch campaign architecture",
+    "Category": "Marketing",
+    "Description": "Design the full October pre-launch campaign structure: email sequences, social content calendar, waitlist nurture series, and celebrity/media cohort content plan, all building to the November 1 public launch.",
+    "Owner": "Martin (Marketing)",
+    "Priority": "High",
+    "Status": "Not Started",
+    "Due Date": "2026-08-31",
+    "Dependencies": [
+      "Finalise brand positioning ('killer movement app' / 'Move Daily. Stay Alive.')",
+      "Build waitlist landing page",
+      "Identify and outreach to celebrity/media invite-only October cohort"
+    ],
+    "Notes": "October campaign arc: Week 1 (Oct 1) — waitlist opens, curiosity hook. Week 2 — celebrity/influencer content starts dropping. Week 3 — Halloween creative peaks. Week 4 (Oct 28-31) — Halloween campaign climax, final waitlist push. November 1: public launch. All channels: email, Instagram, Facebook, TikTok (if appropriate for audience)."
+  },
+  {
+    "Task Name": "Identify and outreach to celebrity/media invite-only October cohort (7 Sharp, MediaWorks/The Breeze, Radio Hauraki)",
+    "Category": "Marketing",
+    "Description": "Identify and personally approach NZ celebrities, media personalities, and journalists to participate in the October soft launch as invited guests — targeting 7 Sharp presenters, The Breeze/MediaWorks talent, and Radio Hauraki personalities.",
+    "Owner": "Leanne (CEO)",
+    "Priority": "High",
+    "Status": "Not Started",
+    "Due Date": "2026-08-01",
+    "Dependencies": [
+      "Decision on name: keep REAP or rename (CULL / FALLEN / other)",
+      "Finalise brand positioning ('killer movement app' / 'Move Daily. Stay Alive.')"
+    ],
+    "Notes": "Celebrity cohort should be 10-20 people. Aim for a mix of: recognised NZ fitness personalities, entertainment media with large social followings, local Hamilton/Waikato identities. Gifted season pass + personal invitation from Leanne. Brief them on content they can share and what not to say (legal/prize specifics). 7 Sharp connection: if any participant appears on 7 Sharp during October, this is significant earned media."
+  },
+  {
+    "Task Name": "Identify NZ fitness influencers for gifted season passes",
+    "Category": "Marketing",
+    "Description": "Research and identify 10-20 NZ fitness and lifestyle influencers who align with REAP's brand positioning, and approach them with gifted Season 1 passes in exchange for authentic content during October and November.",
+    "Owner": "Martin (Marketing)",
+    "Priority": "High",
+    "Status": "Not Started",
+    "Due Date": "2026-08-15",
+    "Dependencies": ["Finalise brand positioning ('killer movement app' / 'Move Daily. Stay Alive.')"],
+    "Notes": "Focus on micro-influencers (5K-50K followers) with high engagement in fitness, running, cycling, or general wellness. NZ-based is essential — international influencers have low relevance to NZ audience. Do not require specific post formats — authentic content performs better. Document gifted pass agreements even informally (email confirmation)."
+  },
+  {
+    "Task Name": "Prepare Halloween campaign creative",
+    "Category": "Marketing",
+    "Description": "Design and produce all Halloween campaign creative assets — social posts, email headers, landing page treatments, and any video/animation — timed to peak October 28-31.",
+    "Owner": "Martin (Marketing)",
+    "Priority": "High",
+    "Status": "Not Started",
+    "Due Date": "2026-09-30",
+    "Dependencies": [
+      "Finalise brand positioning ('killer movement app' / 'Move Daily. Stay Alive.')",
+      "Decision on name: keep REAP or rename (CULL / FALLEN / other)"
+    ],
+    "Notes": "Halloween is the natural brand moment for REAP. Creative direction: dark, atmospheric, survival-horror aesthetic — but keep it fun and active, not grim. Key message: 'The reaping begins November 1. Don't get cut.' Countdown timer on landing page. Consider a short teaser video (15-30 seconds) for social."
+  },
+  {
+    "Task Name": "Build waitlist landing page",
+    "Category": "Marketing",
+    "Description": "Build a public-facing waitlist landing page that captures email sign-ups before the November 1 launch, communicates REAP's core proposition, and creates urgency around the limited October soft launch.",
+    "Owner": "Ashleigh (Dev)",
+    "Priority": "High",
+    "Status": "Not Started",
+    "Due Date": "2026-08-01",
+    "Dependencies": ["Finalise brand positioning ('killer movement app' / 'Move Daily. Stay Alive.')"],
+    "Notes": "Landing page must go live October 1 at the latest. Should include: hero copy, how it works (3 steps), October teaser, email capture form, and countdown to November 1. Integrate with email platform (Mailchimp or similar). SEO-optimised for 'NZ fitness challenge' and related terms. Mobile-first design."
+  },
+  {
+    "Task Name": "Launch day design and countdown",
+    "Category": "Marketing",
+    "Description": "Design the November 1 public launch day experience: countdown timer on landing page, launch email to waitlist, social media launch posts, and any live elements (e.g., live participant count going up).",
+    "Owner": "Martin (Marketing)",
+    "Priority": "High",
+    "Status": "Not Started",
+    "Due Date": "2026-10-15",
+    "Dependencies": [
+      "Build waitlist landing page",
+      "Prepare Halloween campaign creative"
+    ],
+    "Notes": "Launch day should feel like an event. Consider: midnight launch (NZST November 1), real-time participant counter on landing page, social live update schedule. Coordinate with Ashleigh on any live data elements. Pre-schedule all social posts to go at midnight."
+  },
+  {
+    "Task Name": "Prepare shareable content templates for RST partners",
+    "Category": "Marketing",
+    "Description": "Create a library of ready-to-use social media post templates, email copy, and poster designs for RST partners to share with their communities, pre-loaded with their unique referral link.",
+    "Owner": "Martin (Marketing)",
+    "Priority": "High",
+    "Status": "Not Started",
+    "Due Date": "2026-09-15",
+    "Dependencies": [
+      "Finalise brand positioning ('killer movement app' / 'Move Daily. Stay Alive.')",
+      "RST partner pack (emails, social posts, posters, FAQ, invite link)"
+    ],
+    "Notes": "Templates should require minimal customisation — RST staff are not marketing professionals. Include: 2x Instagram post templates, 1x Facebook post, 1x email copy block, 1x A4 poster (printable), 1x SMS/WhatsApp message template. Canva templates are ideal for RST staff to self-serve."
+  },
+  {
+    "Task Name": "Build Hello Hamilton and regional newsletter campaign",
+    "Category": "Marketing",
+    "Description": "Develop a campaign for placement in Hello Hamilton and other regional newsletters and community channels, targeting the Waikato region as REAP's home market for an initial concentrated launch.",
+    "Owner": "Martin (Marketing)",
+    "Priority": "Medium",
+    "Status": "Not Started",
+    "Due Date": "2026-09-30",
+    "Dependencies": ["Finalise brand positioning ('killer movement app' / 'Move Daily. Stay Alive.')"],
+    "Notes": "Hello Hamilton has strong local reach. Also consider: Stuff Waikato, NZ Herald regional, local Facebook groups (Hamilton Buy/Sell/Trade, Hamilton Events). Regional concentration in Year 1 helps with word-of-mouth density and makes participant communities feel local."
+  },
+  {
+    "Task Name": "Develop 'prove it' challenge hook marketing copy",
+    "Category": "Marketing",
+    "Description": "Develop marketing copy centred on the 'prove it' challenge hook — positioning REAP as a call to action for people who claim they want to be more active but haven't followed through.",
+    "Owner": "Martin (Marketing)",
+    "Priority": "Medium",
+    "Status": "Not Started",
+    "Due Date": "2026-08-31",
+    "Dependencies": ["Finalise brand positioning ('killer movement app' / 'Move Daily. Stay Alive.')"],
+    "Notes": "Hook: 'You said you'd do more this year. REAP is your chance to prove it.' This targets the 'aspiring inactive' and 'inconsistent active' segments. Should feel like a direct challenge, not a guilt trip. Test multiple versions for email subject lines and social headlines."
+  },
+  {
+    "Task Name": "Prepare FAQ for media/journalist inquiries",
+    "Category": "Marketing",
+    "Description": "Prepare a concise FAQ document for media and journalist inquiries, covering: what REAP is, who is behind it, how the prize draw works, and how Sport Waikato's charitable mission connects to a commercial subscription product.",
+    "Owner": "Leanne (CEO)",
+    "Priority": "High",
+    "Status": "Not Started",
+    "Due Date": "2026-09-15",
+    "Dependencies": [
+      "Develop brand rationale document (playfully dark, not gory)",
+      "Resolve 'at random' vs 'skill-based' contradiction in Rules/Terms"
+    ],
+    "Notes": "Anticipate hard questions: 'Is this gambling?' / 'What happens to people who can't afford $14.99/month?' / 'Is this appropriate for a charitable trust?' / 'What if someone gets injured trying to meet the daily goal?' Leanne should be the named media contact. Brief Leanne on talking points before any media approaches."
+  },
+  {
+    "Task Name": "Outreach to Gallagher (Hamilton corporate - first team)",
+    "Category": "Partnerships",
+    "Description": "Approach Gallagher Group in Hamilton as the first target corporate partner, pitching a sponsored staff group league — positioning REAP as a corporate wellness activation with measurable participation data.",
+    "Owner": "Leanne (CEO)",
+    "Priority": "High",
+    "Status": "Not Started",
+    "Due Date": "2026-08-01",
+    "Dependencies": [
+      "Build group/league feature (create group, invite link, private leaderboard)",
+      "Identify corporate team packages and pricing"
+    ],
+    "Notes": "Gallagher is a large Hamilton employer with a health-conscious brand. Corporate pitch angle: staff wellness, team challenge, measurable activity data, Sport Waikato brand association. Corporate package should include: group setup, group admin dashboard, end-of-season activity report. Leanne to leverage existing Sport Waikato relationship."
+  },
+  {
+    "Task Name": "Develop RST partner pack (emails, social posts, posters, FAQ, invite link)",
+    "Category": "Partnerships",
+    "Description": "Develop a complete partner pack for Regional Sport Trusts (RSTs) containing everything they need to promote REAP to their communities: introduction emails, social media posts, printable posters, FAQ, and their unique referral/invite link.",
+    "Owner": "Martin (Marketing)",
+    "Priority": "High",
+    "Status": "Not Started",
+    "Due Date": "2026-09-15",
+    "Dependencies": [
+      "Build RST referral tracking (unique invite links with attribution)",
+      "RST commission model documentation",
+      "Finalise brand positioning ('killer movement app' / 'Move Daily. Stay Alive.')"
+    ],
+    "Notes": "RST partners are Sport Waikato's primary distribution network nationally. Pack should be plug-and-play — minimal effort for RST staff. Make the referral link prominent and easy to find. Include a one-page briefing on REAP's public health rationale so RST staff can speak to it confidently."
+  },
+  {
+    "Task Name": "RST commission model documentation",
+    "Category": "Partnerships",
+    "Description": "Document the RST commission model clearly — commission rate per confirmed paid sign-up, payment schedule, reporting process, and any minimums or caps — so RST partners understand the commercial arrangement.",
+    "Owner": "Leanne (CEO)",
+    "Priority": "High",
+    "Status": "Not Started",
+    "Due Date": "2026-08-31",
+    "Dependencies": [],
+    "Notes": "Proposed commission rate to be confirmed by Leanne. Consider: flat fee per sign-up (e.g., $3/subscriber) vs percentage of subscription (e.g., 20% = ~$3/month). Monthly payment schedule. RST partners need this documented before they will commit to promoting REAP. May also need a simple agreement/MOU."
+  },
+  {
+    "Task Name": "Identify and approach prize sponsor (Garmin NZ or similar)",
+    "Category": "Partnerships",
+    "Description": "Identify and approach a suitable prize sponsor — Garmin NZ being the primary target — to fund or supply prizes for REAP's spot prize draw in exchange for brand exposure and participant data access (with consent).",
+    "Owner": "Leanne (CEO)",
+    "Priority": "High",
+    "Status": "Not Started",
+    "Due Date": "2026-08-01",
+    "Dependencies": [
+      "Draft prize sponsorship agreement template",
+      "Privacy Act 2020 compliance review for sponsor data sharing"
+    ],
+    "Notes": "Garmin NZ is ideal: their products are directly relevant to REAP participants (activity tracking), they have brand awareness in the fitness space, and a Garmin watch/tracker as a prize is highly desirable. Alternative: Asics NZ, Lululemon, New Balance. Sponsorship value: $5K-$20K in prizes. In return: logo on platform, mention in prize draw notifications, access to opted-in participant data."
+  },
+  {
+    "Task Name": "Draft prize sponsorship agreement template",
+    "Category": "Partnerships",
+    "Description": "Draft a standard prize sponsorship agreement template covering sponsor obligations, prize value and supply, brand usage rights, and data access terms — for use with Garmin NZ and any subsequent prize sponsors.",
+    "Owner": "Legal/Shelley",
+    "Priority": "High",
+    "Status": "Not Started",
+    "Due Date": "2026-08-31",
+    "Dependencies": [
+      "Privacy Act 2020 compliance review for sponsor data sharing",
+      "Prepare data processing agreement template for sponsors"
+    ],
+    "Notes": "Template should be reusable. Key clauses: sponsor cannot withdraw prizes after season starts, data access is subject to participant consent, Sport Waikato retains final say on prize draw process, sponsor brand usage is limited to agreed placements. Shelley to draft; Leanne to sign off."
+  },
+  {
+    "Task Name": "Identify corporate team packages and pricing",
+    "Category": "Partnerships",
+    "Description": "Define and document the corporate team package offering: what is included (group setup, private leaderboard, activity report, branding), pricing tiers (e.g., 10 seats, 25 seats, 50+ seats), and any volume discounts.",
+    "Owner": "Leanne (CEO)",
+    "Priority": "High",
+    "Status": "Not Started",
+    "Due Date": "2026-07-31",
+    "Dependencies": ["Build group/league feature (create group, invite link, private leaderboard)"],
+    "Notes": "Corporate packages may be priced per-seat (same $14.99 or discounted for bulk) or as a flat fee for the group. Consider a 'corporate admin' role that can see group-level (not individual) data. Pricing should be set before Gallagher outreach. Get Leanne's sign-off on whether corporates get a discount or pay full price."
+  },
+  {
+    "Task Name": "Approach NZ Breakers re: sponsored group league",
+    "Category": "Partnerships",
+    "Description": "Approach the NZ Breakers basketball team about creating a sponsored REAP group league — 'The Breakers Challenge' — leveraging their brand and fan base for mutual promotion and participant acquisition.",
+    "Owner": "Leanne (CEO)",
+    "Priority": "Medium",
+    "Status": "Not Started",
+    "Due Date": "2026-09-01",
+    "Dependencies": [
+      "Build group/league feature (create group, invite link, private leaderboard)",
+      "Develop sponsored group league commercial terms"
+    ],
+    "Notes": "NZ Breakers have a large, active fan base with strong Waikato/Auckland presence. A branded group league gives them a health/wellness story and REAP gets their audience. Explore: Breakers players participating in October soft launch, co-branded social content, Breakers email list promotion. Contact through existing Sport Waikato relationships if possible."
+  },
+  {
+    "Task Name": "Approach Spark or similar telco re: sponsored group",
+    "Category": "Partnerships",
+    "Description": "Approach Spark NZ or a comparable telco about sponsoring a REAP group league as a staff wellness or customer engagement initiative, leveraging their reach and CSR/wellness budgets.",
+    "Owner": "Leanne (CEO)",
+    "Priority": "Medium",
+    "Status": "Not Started",
+    "Due Date": "2026-09-01",
+    "Dependencies": [
+      "Build group/league feature (create group, invite link, private leaderboard)",
+      "Develop sponsored group league commercial terms"
+    ],
+    "Notes": "Telcos have large NZ employee bases and active CSR programs. Spark has previously supported active recreation initiatives. Alternative targets: Vodafone/One NZ, 2degrees. Pitch: employee wellness challenge + brand association with Sport Waikato and a novel NZ-built product."
+  },
+  {
+    "Task Name": "Develop sponsored group league commercial terms",
+    "Category": "Partnerships",
+    "Description": "Define and document the commercial terms for sponsored group leagues: what sponsors pay, what they get (branding, data, reports), and how the arrangement differs from a standard corporate team package.",
+    "Owner": "Leanne (CEO)",
+    "Priority": "Medium",
+    "Status": "Not Started",
+    "Due Date": "2026-08-31",
+    "Dependencies": ["Identify corporate team packages and pricing"],
+    "Notes": "Sponsored group league is higher-value than a corporate team package — sponsor's name on the group/league, possibly a prize top-up, co-branded marketing. Price point: $5K-$25K per season depending on scale. Distinct from the subscription fee paid by individual participants."
+  },
+  {
+    "Task Name": "Set up admin revenue dashboard (Operations)",
+    "Category": "Operations",
+    "Description": "Configure and operationalise the admin revenue dashboard for Leanne and the Sport Waikato team to monitor real-time revenue, subscriber counts, and commission obligations.",
+    "Owner": "Leanne (CEO)",
+    "Priority": "High",
+    "Status": "Not Started",
+    "Due Date": "2026-10-01",
+    "Dependencies": ["Build admin revenue dashboard"],
+    "Notes": "Operations task — separate from the build task. Ensure Leanne and relevant staff have access. Set up weekly email summary reports. Define who has access to what level of data (board vs operations vs admin)."
+  },
+  {
+    "Task Name": "Set up Stripe webhook and payment audit trail",
+    "Category": "Operations",
+    "Description": "Operationalise the Stripe webhook integration and establish a payment audit trail process — regular reconciliation of Stripe payments against Supabase participant records to catch any discrepancies.",
+    "Owner": "Leanne (CEO)",
+    "Priority": "High",
+    "Status": "Not Started",
+    "Due Date": "2026-10-01",
+    "Dependencies": ["Build Stripe webhook handler (set paid_at, confirm season entry)"],
+    "Notes": "Monthly reconciliation at minimum. Stripe dashboard exports can be cross-referenced against Supabase participant records. Any participant showing as active without a confirmed paid_at should be flagged. Finance team should own this process post-launch."
+  },
+  {
+    "Task Name": "Document prize draw SOP (how draw runs, winner notification, prize disbursement)",
+    "Category": "Operations",
+    "Description": "Write a standard operating procedure for running the REAP spot prize draw: who runs it, how winners are selected, how winners are notified, and how prizes are physically disbursed.",
+    "Owner": "Sport Waikato Team",
+    "Priority": "High",
+    "Status": "Not Started",
+    "Due Date": "2026-09-30",
+    "Dependencies": [
+      "Build prize draw backend (prize_awards table, 7-day lock, eligibility gate)",
+      "Document prize draw SOP (how draw runs, winner notification, prize disbursement)"
+    ],
+    "Notes": "SOP should cover: who has admin access to run draws, audit log requirements, winner notification template (email/push notification), prize collection process (postage, or in-person at RST), and what happens if a winner is unreachable. Document for DIA compliance purposes."
+  },
+  {
+    "Task Name": "Prepare board report (final version)",
+    "Category": "Operations",
+    "Description": "Prepare and finalise the formal board report for Sport Waikato trustees, covering REAP's product, commercial model, legal compliance status, risk assessment, and recommendation to proceed to public launch.",
+    "Owner": "Leanne (CEO)",
+    "Priority": "Critical",
+    "Status": "Not Started",
+    "Due Date": "2026-06-30",
+    "Dependencies": [
+      "Resolve 'at random' vs 'skill-based' contradiction in Rules/Terms",
+      "Get DIA informal guidance on prize draw structure"
+    ],
+    "Notes": "Board report should be presented at the next scheduled board meeting. Include: executive summary, product description, revenue model, legal compliance status, risk assessment (Six Thinking Hats), and a clear recommendation. Trustees will be conservative — address concerns directly and do not oversell."
+  },
+  {
+    "Task Name": "Pre-launch funder briefings (key funders contacted before public launch)",
+    "Category": "Operations",
+    "Description": "Brief Sport Waikato's key funders (Sport NZ, WEL Energy Trust, and others) on REAP before the public launch — ensuring funders are not surprised and can understand how REAP connects to Sport Waikato's charitable mission.",
+    "Owner": "Leanne (CEO)",
+    "Priority": "High",
+    "Status": "Not Started",
+    "Due Date": "2026-09-15",
+    "Dependencies": ["Prepare board report (final version)"],
+    "Notes": "Funders should be briefed personally by Leanne, not discover REAP through media coverage. Key message: REAP is a Living Lab innovation that generates revenue to sustain Sport Waikato's mission, while generating public health impact data. Have the board-approved report available for funders who want detail."
+  },
+  {
+    "Task Name": "Prepare mayor's league proposal (PR play, Year 2)",
+    "Category": "Operations",
+    "Description": "Prepare a proposal for a 'Mayor's League' — a REAP group league involving the Hamilton Mayor and city councillors — as a Year 2 PR activation that generates media coverage and local government buy-in.",
+    "Owner": "Leanne (CEO)",
+    "Priority": "Low",
+    "Status": "Not Started",
+    "Due Date": "2026-10-31",
+    "Dependencies": ["Build group/league feature (create group, invite link, private leaderboard)"],
+    "Notes": "Year 2 concept — not critical for Season 1 launch. If the Mayor participates in Season 2, it generates significant local media coverage and signals council endorsement of REAP as a public health initiative. Leanne to explore through existing council/Sport Waikato relationships."
+  },
+  {
+    "Task Name": "Set up RST commission tracking and payment process",
+    "Category": "Operations",
+    "Description": "Establish the operational process for tracking RST referral conversions, calculating commission amounts, and making monthly commission payments to RST partners.",
+    "Owner": "Sport Waikato Team",
+    "Priority": "High",
+    "Status": "Not Started",
+    "Due Date": "2026-10-15",
+    "Dependencies": [
+      "Build RST referral tracking (unique invite links with attribution)",
+      "RST commission model documentation"
+    ],
+    "Notes": "Process: monthly report from admin dashboard showing conversions by RST partner → finance calculates commission → payment made by bank transfer or invoice. Consider whether Sport Waikato needs to issue invoices to RST partners or vice versa, given both are charitable trusts. Finance team to advise on GST treatment."
+  },
+  {
+    "Task Name": "Soft launch: celebrity/media invite-only October season",
+    "Category": "Launch",
+    "Description": "Execute the October soft launch with the invited celebrity and media cohort — onboarding them personally, supporting their content creation, and managing any issues before the public launch.",
+    "Owner": "Leanne (CEO)",
+    "Priority": "Critical",
+    "Status": "Not Started",
+    "Due Date": "2026-10-01",
+    "Dependencies": [
+      "Identify and outreach to celebrity/media invite-only October cohort (7 Sharp, MediaWorks/The Breeze, Radio Hauraki)",
+      "Build midnight elimination cron job (pg_cron at 23:59 NZST)",
+      "Build Stripe webhook handler (set paid_at, confirm season entry)",
+      "Device integrations (Apple Health, Garmin, Strava, Google Fit, Fitbit) - verify working"
+    ],
+    "Notes": "October season should be fully functional — no half-built features. Celebrity participants will be the loudest critics if something breaks. Assign a dedicated point of contact (Leanne or Ashleigh) for celebrity/media participants to raise issues. Daily monitoring of elimination job and data sync during October."
+  },
+  {
+    "Task Name": "Open public waitlist (October 1)",
+    "Category": "Launch",
+    "Description": "Go live with the public waitlist landing page on October 1, capturing email sign-ups and beginning the November 1 countdown — this is the first public-facing moment for REAP.",
+    "Owner": "Martin (Marketing)",
+    "Priority": "Critical",
+    "Status": "Not Started",
+    "Due Date": "2026-10-01",
+    "Dependencies": [
+      "Build waitlist landing page",
+      "Finalise brand positioning ('killer movement app' / 'Move Daily. Stay Alive.')",
+      "Decision on name: keep REAP or rename (CULL / FALLEN / other)"
+    ],
+    "Notes": "Landing page must be live and fully functional by midnight September 30. Email capture should flow immediately into the waitlist nurture sequence. Test the full flow (sign-up → confirmation email → nurture email 1) before going live. Monitor sign-up rates daily and adjust campaign spend accordingly."
+  },
+  {
+    "Task Name": "Halloween campaign peak (October 28-31)",
+    "Category": "Launch",
+    "Description": "Execute the Halloween campaign peak — the highest-intensity marketing moment before launch, driving maximum waitlist sign-ups and building anticipation for the November 1 public launch.",
+    "Owner": "Martin (Marketing)",
+    "Priority": "Critical",
+    "Status": "Not Started",
+    "Due Date": "2026-10-28",
+    "Dependencies": [
+      "Prepare Halloween campaign creative",
+      "Build October pre-launch campaign architecture",
+      "Open public waitlist (October 1)"
+    ],
+    "Notes": "Halloween campaign should be pre-scheduled and ready to deploy by October 25. Key moments: October 28 (first Halloween post), October 30 (final push email to waitlist), October 31 (Halloween countdown — 'The Reaping begins tomorrow'). Co-ordinate with celebrity cohort to post their content on Halloween."
+  },
+  {
+    "Task Name": "Public launch November 1 (Season 1 begins)",
+    "Category": "Launch",
+    "Description": "Execute the November 1 public launch — opening registration, sending launch email to waitlist, publishing launch social content, and beginning Season 1 with the midnight elimination cycle.",
+    "Owner": "Leanne (CEO)",
+    "Priority": "Critical",
+    "Status": "Not Started",
+    "Due Date": "2026-11-01",
+    "Dependencies": [
+      "Have Shelley review final Terms and Rules before launch",
+      "Build midnight elimination cron job (pg_cron at 23:59 NZST)",
+      "Build Stripe webhook handler (set paid_at, confirm season entry)",
+      "Build prize draw backend (prize_awards table, 7-day lock, eligibility gate)",
+      "Build group/league feature (create group, invite link, private leaderboard)",
+      "Build shareable daily survival card (WhatsApp-native image)",
+      "Open public waitlist (October 1)",
+      "Halloween campaign peak (October 28-31)"
+    ],
+    "Notes": "All critical product features must be complete and tested before November 1. No partial launches — if a critical feature is not working, delay rather than launch broken. Assign on-call responsibility for November 1 (Ashleigh for technical, Leanne for communications). Monitor Stripe payments, elimination job, and support inbox closely on Day 1."
+  },
+  {
+    "Task Name": "Friday 13 November 'hurrah' event - plan and execute",
+    "Category": "Launch",
+    "Description": "Plan and execute a 'hurrah' event on Friday 13 November 2026 — a media moment celebrating the first 13 days of REAP, engaging survivors, generating social content, and amplifying the Season 1 story.",
+    "Owner": "Leanne (CEO)",
+    "Priority": "High",
+    "Status": "Not Started",
+    "Due Date": "2026-11-13",
+    "Dependencies": ["Public launch November 1 (Season 1 begins)"],
+    "Notes": "Friday 13 is a natural brand moment for REAP — lean into the superstition angle. Event could be: a live leaderboard reveal, a Hamilton-based physical event (group run/walk), a media photo opportunity with top survivors, or a social media campaign ('Share your Day 13 survival card'). Aim for at least one piece of earned media coverage."
+  },
+  {
+    "Task Name": "December season waitlist opens during November",
+    "Category": "Launch",
+    "Description": "Open registration or a waitlist for Season 2 (December) during November, capturing momentum from Season 1 participants and their social sharing — and converting eliminated participants into Season 2 sign-ups.",
+    "Owner": "Martin (Marketing)",
+    "Priority": "High",
+    "Status": "Not Started",
+    "Due Date": "2026-11-15",
+    "Dependencies": ["Public launch November 1 (Season 1 begins)"],
+    "Notes": "Season 2 acquisition is significantly cheaper than Season 1 — eliminated Season 1 participants are the warmest possible leads. Email them immediately on elimination with a Season 2 waitlist CTA. Also target survivors: 'You made it. Challenge your friends in December.' Set up Season 2 waitlist page by November 15."
+  }
+]

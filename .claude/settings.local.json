@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm exec:*)",
+      "Bash(\"/c/Program Files/nodejs/node\" \"/c/Program Files/nodejs/node_modules/npm/bin/npx-cli.js\" --yes pnpm --version)",
+      "Bash(\"/c/Program Files/nodejs/node\" \"/c/Program Files/nodejs/node_modules/npm/bin/npx-cli.js\" --yes pnpm exec tsc --noEmit)",
+      "Bash(\"/c/Program Files/nodejs/node\" \"/c/Program Files/nodejs/node_modules/npm/bin/npx-cli.js\" --yes pnpm run build)",
+      "Bash(\"/c/Program Files/nodejs/node\" \"/c/Program Files/nodejs/node_modules/npm/bin/npx-cli.js\" --yes pnpm install)",
+      "Bash(\"/c/Program Files/nodejs/node\" \"/c/Program Files/nodejs/node_modules/npm/bin/npx-cli.js\" --yes pnpm approve-builds)",
+      "Bash(node node_modules/vite/bin/vite.js build)",
+      "Bash(node node_modules/vite/bin/vite.js)",
+      "Bash(ls \"C:/Users/grant/OneDrive/Documents/GitHub/reapplanning/\"*.md)",
+      "Bash(mkdir -p \"C:/Users/grant/OneDrive/Documents/GitHub/reapplanning/public/docs\")",
+      "Bash(cp REAP-refund-policy-section.md REAP-Celebrity-Ambassador-Agreement.md REAP-Competitive-Strategy.md REAP-Governance.md REAP-gambling-compliance-section.md REAP-Appendix-A-Legal-Compliance-Audit.md REAP-Product-Harm-Protocol.md REAP-Media-Handling.md REAP-Reputation-Protection.md REAP-Sponsorship-Contract.md REAP-Appendix-B-Financial-Model.md REAP-Appendix-C-Product-Architecture.md REAP-Board-Launch-Conditions.md REAP-Terms-Additions.md REAP-lawyer-summary.md REAP-six-thinking-hats.md REAP-Appendix-D-Action-Plan.md REAP-Living-Lab-Separation.md REAP-Future-Products.md REAP-lovable-prompts.md REAP-website-content.md REAP-gambling-framing-strategy.md REAP-meeting-summary.md REAP-board-report.md survive-the-reap-compliance-audit.md public/docs/)",
+      "Bash(node node_modules/typescript/bin/tsc --noEmit --skipLibCheck)",
+      "Bash(npx tsc:*)",
+      "Bash(node_modules/.bin/tsc --noEmit)",
+      "Bash(node_modules/.bin/vite build:*)"
+    ]
+  }
+}
