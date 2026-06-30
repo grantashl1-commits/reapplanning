@@ -2340,20 +2340,202 @@ export function WelfareIncidents() {
 
 ---
 
-## T020: TERRA API Integration (Setup Notes)
+## T020: TERRA API Integration
 
 TERRA is the single integration covering Apple Health, Garmin, Fitbit, Strava, Google Fit, Polar, Whoop, Samsung Health. This replaces building 7+ individual device integrations.
 
+**Full connection flow:**
+1. User clicks "Connect Terra" → frontend calls `connect-terra` edge function
+2. `connect-terra` calls `POST https://api.tryterra.co/v2/auth/generateWidgetSession` and returns a widget URL
+3. Frontend redirects user to the Terra widget URL; user completes OAuth (e.g. Google)
+4. Terra redirects back to `/connect/callback?user_id=<terra_user_id>&reference_id=<supabase_user_id>&...`
+5. `/connect/callback` page calls `save-terra-connection` edge function with `terra_user_id`
+6. `save-terra-connection` writes `terra_user_id` to `participants` row for the logged-in user
+7. Terra also fires a `user_auth` webhook — `terra-webhook` handles this as a belt-and-suspenders backup
+8. Future `activity` webhooks use `terra_user_id` to match the participant and write to `daily_movement_log`
+
 **Setup steps:**
-1. Sign up at `tryterra.co` — get API key
-2. Create a webhook endpoint in Supabase Edge Functions (below)
-3. Register webhook URL in TERRA dashboard: `https://[ref].supabase.co/functions/v1/terra-webhook`
+1. Sign up at `tryterra.co` — get API key, dev ID, and signing secret
+2. In Terra dashboard, set the webhook URL to: `https://[ref].supabase.co/functions/v1/terra-webhook`
+3. Set the redirect URL (Widget callback) to: `https://survivethereap.com/connect/callback`
+4. Add Supabase secrets: `TERRA_API_KEY`, `TERRA_DEV_ID`, `TERRA_WEBHOOK_SECRET`
+5. Deploy all three edge functions below
+6. Run the database migration (bottom of this section)
+
+---
+
+### connect-terra edge function
+
+Generates a Terra Widget session. Frontend calls this when user clicks "Connect Terra".
+
+```typescript
+// supabase/functions/connect-terra/index.ts
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+const supabase = createClient(
+  Deno.env.get('SUPABASE_URL')!,
+  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+);
+const TERRA_API_KEY = Deno.env.get('TERRA_API_KEY')!;
+const TERRA_DEV_ID = Deno.env.get('TERRA_DEV_ID')!;
+
+Deno.serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response(null, {
+      headers: { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'authorization, content-type' },
+    });
+  }
+
+  const authHeader = req.headers.get('Authorization');
+  if (!authHeader) return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
+
+  const { data: { user }, error: authError } = await supabase.auth.getUser(authHeader.replace('Bearer ', ''));
+  if (authError || !user) return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
+
+  // Pass Supabase user.id as reference_id so the callback and user_auth webhook
+  // can match the Terra user back to this participant without a separate lookup table.
+  const terraRes = await fetch('https://api.tryterra.co/v2/auth/generateWidgetSession', {
+    method: 'POST',
+    headers: {
+      'dev-id': TERRA_DEV_ID,
+      'x-api-key': TERRA_API_KEY,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      reference_id: user.id,
+      providers: 'GARMIN,FITBIT,POLAR,WHOOP,APPLE,GOOGLE,SAMSUNG,WITHINGS,OURA',
+      language: 'en',
+    }),
+  });
+
+  if (!terraRes.ok) {
+    console.error('Terra widget session error:', await terraRes.text());
+    return new Response(JSON.stringify({ error: 'Failed to generate Terra widget session' }), { status: 502 });
+  }
+
+  const { url } = await terraRes.json();
+  return new Response(JSON.stringify({ url }), {
+    headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+  });
+});
+```
+
+---
+
+### save-terra-connection edge function
+
+Called by the `/connect/callback` page after Terra's redirect. Saves the Terra user_id.
+
+```typescript
+// supabase/functions/save-terra-connection/index.ts
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+const supabase = createClient(
+  Deno.env.get('SUPABASE_URL')!,
+  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+);
+
+Deno.serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response(null, {
+      headers: { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'authorization, content-type' },
+    });
+  }
+
+  const authHeader = req.headers.get('Authorization');
+  if (!authHeader) return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
+
+  const { data: { user }, error: authError } = await supabase.auth.getUser(authHeader.replace('Bearer ', ''));
+  if (authError || !user) return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
+
+  const { terra_user_id, reference_id } = await req.json();
+  if (!terra_user_id) return new Response(JSON.stringify({ error: 'Missing terra_user_id' }), { status: 400 });
+
+  // Verify reference_id matches the logged-in user (set when generateWidgetSession was called)
+  if (reference_id && reference_id !== user.id) {
+    return new Response(JSON.stringify({ error: 'reference_id mismatch' }), { status: 403 });
+  }
+
+  const { error } = await supabase
+    .from('participants')
+    .update({ terra_user_id, terra_connected_at: new Date().toISOString() })
+    .eq('user_id', user.id);
+
+  if (error) {
+    console.error('Failed to save terra_user_id:', error);
+    return new Response(JSON.stringify({ error: 'Database error' }), { status: 500 });
+  }
+
+  return new Response(JSON.stringify({ success: true }), {
+    headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+  });
+});
+```
+
+**Frontend: `/connect/callback` page logic**
+
+```typescript
+// src/pages/ConnectCallback.tsx (or wherever /connect/callback is handled)
+// Reads Terra's redirect params and calls save-terra-connection.
+
+import { useEffect, useState } from 'react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
+import { supabase } from '../lib/supabaseClient';
+
+export function ConnectCallback() {
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
+
+  useEffect(() => {
+    async function handleCallback() {
+      const terraUserId = searchParams.get('user_id');
+      const referenceId = searchParams.get('reference_id');
+      const provider = searchParams.get('provider');
+
+      if (provider !== 'terra' || !terraUserId) {
+        setStatus('error');
+        return;
+      }
+
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        setStatus('error');
+        return;
+      }
+
+      const res = await supabase.functions.invoke('save-terra-connection', {
+        body: { terra_user_id: terraUserId, reference_id: referenceId },
+      });
+
+      if (res.error) {
+        console.error('save-terra-connection error:', res.error);
+        setStatus('error');
+      } else {
+        setStatus('success');
+        setTimeout(() => navigate('/activity?tab=wearables'), 1500);
+      }
+    }
+
+    handleCallback();
+  }, []);
+
+  if (status === 'loading') return <div>Connecting your wearable...</div>;
+  if (status === 'success') return <div>Connected! Redirecting...</div>;
+  return <div>CONNECTION FAILED — Something went wrong. Please try again.</div>;
+}
+```
+
+---
+
+### terra-webhook edge function (fixed)
+
+**Bug in original version:** The signature check compared the full `terra-signature` header value (`t=<timestamp>,v1=<hash>`) directly against a plain hex hash — this always fails. Terra's format requires extracting the timestamp, recomputing `HMAC(timestamp.body)`, and comparing only the `v1` portion.
+
+**Also added:** `user_auth` event handling as a backup path for saving `terra_user_id`.
 
 ```typescript
 // supabase/functions/terra-webhook/index.ts
-// Receives activity data from TERRA API for all connected wearables.
-// TERRA calls this whenever a participant's device syncs.
-
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { createHmac } from 'node:crypto';
 
@@ -2361,33 +2543,53 @@ const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 );
-const TERRA_SIGNING_SECRET = Deno.env.get('TERRA_SIGNING_SECRET')!;
+const TERRA_SIGNING_SECRET = Deno.env.get('TERRA_WEBHOOK_SECRET')!;
+
+// Terra sends: terra-signature: t=<timestamp>,v1=<hmac_sha256(timestamp.body)>
+function verifySignature(body: string, header: string | null): boolean {
+  if (!header) return false;
+  const parts = Object.fromEntries(header.split(',').map(p => p.split('=') as [string, string]));
+  const { t: timestamp, v1 } = parts;
+  if (!timestamp || !v1) return false;
+
+  const expected = createHmac('sha256', TERRA_SIGNING_SECRET)
+    .update(`${timestamp}.${body}`)
+    .digest('hex');
+
+  // Constant-time comparison
+  if (expected.length !== v1.length) return false;
+  let diff = 0;
+  for (let i = 0; i < expected.length; i++) diff |= expected.charCodeAt(i) ^ v1.charCodeAt(i);
+  return diff === 0;
+}
 
 Deno.serve(async (req) => {
   const body = await req.text();
-  
-  // Verify TERRA signature
-  const signature = req.headers.get('terra-signature');
-  const expectedSig = createHmac('sha256', TERRA_SIGNING_SECRET)
-    .update(body)
-    .digest('hex');
-  if (signature !== expectedSig) {
+  if (!verifySignature(body, req.headers.get('terra-signature'))) {
     return new Response('Invalid signature', { status: 401 });
   }
 
   const payload = JSON.parse(body);
   const { type, user, data } = payload;
 
-  // We care about 'activity' events with heart rate data
-  if (type !== 'activity' || !data?.length) {
+  // user_auth: backup path — also saves terra_user_id when the widget OAuth completes
+  if (type === 'user_auth') {
+    const referenceId = payload.reference_id ?? user?.reference_id;
+    if (referenceId && user?.user_id) {
+      await supabase
+        .from('participants')
+        .update({ terra_user_id: user.user_id, terra_connected_at: new Date().toISOString(), terra_provider: user.provider ?? null })
+        .eq('user_id', referenceId);
+    }
     return new Response('OK');
   }
 
-  // Match TERRA user to REAP participant via terra_user_id stored at connection time
+  if (type !== 'activity' || !data?.length) return new Response('OK');
+
   const { data: participant } = await supabase
     .from('participants')
     .select('id, zone2_hr_low, zone2_hr_high')
-    .eq('terra_user_id', user.user_id)  // add terra_user_id column to participants table
+    .eq('terra_user_id', user.user_id)
     .single();
 
   if (!participant) return new Response('Participant not found', { status: 404 });
@@ -2395,60 +2597,52 @@ Deno.serve(async (req) => {
   for (const activity of data) {
     const logDate = activity.metadata.start_time.split('T')[0];
     const hrSamples = activity.heart_rate_data?.detailed?.hr_samples ?? [];
-    
     if (!hrSamples.length) continue;
 
-    // Calculate Zone 2 continuous minutes from raw HR samples
     let maxContinuousSeconds = 0;
     let currentRun = 0;
     let prevTime: number | null = null;
 
     for (const sample of hrSamples) {
       const ts = new Date(sample.timestamp).getTime();
-      const duration = prevTime ? Math.min((ts - prevTime) / 1000, 60) : 5; // cap gap at 60s
+      const duration = prevTime ? Math.min((ts - prevTime) / 1000, 60) : 5;
       prevTime = ts;
-      
-      const inZone2 = 
-        sample.bpm >= participant.zone2_hr_low && 
-        sample.bpm <= participant.zone2_hr_high;
-      
-      if (inZone2) {
-        currentRun += duration;
-        maxContinuousSeconds = Math.max(maxContinuousSeconds, currentRun);
-      } else {
-        currentRun = 0;
-      }
+      const inZone2 = sample.bpm >= participant.zone2_hr_low && sample.bpm <= participant.zone2_hr_high;
+      if (inZone2) { currentRun += duration; maxContinuousSeconds = Math.max(maxContinuousSeconds, currentRun); }
+      else { currentRun = 0; }
     }
 
     const zone2MinutesContinuous = Math.floor(maxContinuousSeconds / 60);
+    const summaryInterval = activity.metadata.summary_interval ?? 5;
     const zone2MinutesTotal = hrSamples.filter((s: { bpm: number }) =>
       s.bpm >= participant.zone2_hr_low && s.bpm <= participant.zone2_hr_high
-    ).length * (activity.metadata.summary_interval ?? 5) / 60;
+    ).length * summaryInterval / 60;
 
-    await supabase
-      .from('daily_movement_log')
-      .upsert({
-        participant_id: participant.id,
-        log_date: logDate,
-        zone2_minutes_continuous: zone2MinutesContinuous,
-        zone2_minutes_total: Math.round(zone2MinutesTotal),
-        peak_hr: activity.heart_rate_data?.summary?.max_hr_bpm ?? null,
-        average_hr: activity.heart_rate_data?.summary?.avg_hr_bpm ?? null,
-        steps: activity.distance_data?.detailed?.step_samples?.reduce(
-          (sum: number, s: { steps: number }) => sum + s.steps, 0
-        ) ?? null,
-        data_source: user.provider,
-        synced_at: new Date().toISOString(),
-      }, { onConflict: 'participant_id,log_date' });
+    await supabase.from('daily_movement_log').upsert({
+      participant_id: participant.id,
+      log_date: logDate,
+      zone2_minutes_continuous: zone2MinutesContinuous,
+      zone2_minutes_total: Math.round(zone2MinutesTotal),
+      peak_hr: activity.heart_rate_data?.summary?.max_hr_bpm ?? null,
+      average_hr: activity.heart_rate_data?.summary?.avg_hr_bpm ?? null,
+      steps: activity.distance_data?.detailed?.step_samples?.reduce(
+        (sum: number, s: { steps: number }) => sum + s.steps, 0
+      ) ?? null,
+      data_source: user.provider,
+      synced_at: new Date().toISOString(),
+    }, { onConflict: 'participant_id,log_date' });
   }
 
   return new Response('OK');
 });
 ```
 
-**Add to participants table:**
+**Database migration:**
 ```sql
-alter table participants add column if not exists terra_user_id text unique;
+alter table participants
+  add column if not exists terra_user_id text unique,
+  add column if not exists terra_connected_at timestamptz,
+  add column if not exists terra_provider text;
 ```
 
 ---
